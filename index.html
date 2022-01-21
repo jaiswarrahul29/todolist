@@ -1,1 +1,240 @@
 
+<style>
+    .Input__section {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      margin-top: 1rem;
+      gap: 1rem;
+    }
+    .Input__section input {
+      outline: none;
+      padding: 0.5rem;
+    }
+    .Input__section button {
+      /* background-color: #f44336; */
+      padding: 0.5rem 0.7rem;
+      border: 1px solid gray;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .task {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      margin-top: 2rem;
+      /* gap: 1rem; */
+      /* border: 1px solid gray; */
+    }
+    .main_content {
+      border: 1px solid rgb(177, 177, 177);
+      border-radius: 4px;
+      padding: 1rem;
+      max-width: 40%;
+      min-width: 40%;
+    }
+    .main_content .content {
+      background-color: rgb(255 188 188);
+      padding: 0.8rem;
+      margin: 0.7rem 0;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: 10px;
+      align-items: flex-start;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .main_content .content .button_ {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+    }
+    .main_content .content span {
+      font-size: 15px;
+      font-family: sans-serif;
+    }
+    i {
+      padding: 0.3rem;
+    }
+    .main_content .content button {
+      /* padding: 0.5rem; */
+      cursor: pointer;
+    }
+    .main_content .active {
+      background-color: #70c373 !important;
+    }
+
+    /* edit modal  */
+    .modal_edit {
+      position: absolute;
+      top: 1rem;
+      left: 0;
+      right: 0;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px solid gray;
+      width: 30%;
+      padding: 2rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: nowrap;
+      gap: 10px;
+      background-color: rgb(240, 157, 157);
+      border-radius: 5px;
+    }
+    .modal_edit input {
+        padding: 0.5rem;
+        outline: none;
+    }
+    .modal_edit button{
+        padding: 0.5rem;
+        cursor: pointer;
+    }
+  </style>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To Do List</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  </head>
+  <body>
+      <h1 style="text-align: center;font-family: monospace;">To Do List</h1>
+    <section class="Input__section">
+      <form>
+        <input
+          type="text"
+          placeholder="Add To Do List"
+          id="user_input"
+          required
+        />
+        <button type="submit" id="add_btn">ADD</button>
+      </form>
+    </section>
+
+    <div class="task" id="task__">
+      <div class="main_content" id="main_content">
+        
+      </div>
+    </div>
+
+    <!-- edit modal  -->
+
+    <div class="modal_edit">
+      <input hidden type="text" id="edit_key" />
+      <input type="text" id="edit_value" placeholder="update task" />
+      <button id="edit_task_btn">Edit</button>
+    </div>
+ 
+  </body>
+</html>
+
+
+<script>
+    // fetching task from localstorage
+    var length = localStorage.length;
+    for (i = 0; i < length; i++) {
+      var key = localStorage.key(i);
+      var value = JSON.parse(localStorage.getItem(key))["task"];
+      if (JSON.parse(localStorage.getItem(key))["status"] == true) {
+        var checked = "checked";
+        var active = "active";
+      } else {
+        var checked = "";
+        var active = "";
+      }
+      $("#main_content").append(
+        '<div id="content" class="content ' +
+          active +
+          '"><div><input ' +
+          checked +
+          ' class="checkbox" id="' +
+          key +
+          '" type="checkbox" /><span>' +
+          value +
+          '</span></div><div class="button_"><button><i id="' +
+          key +
+          '" class="fas fa-edit edit_btn"></i></button><button><i id="' +
+          key +
+          '" class="fas fa-trash-alt delete_btn"></i></button></div></div>'
+      );
+    }
+    // adding task to localStorage
+    $("#add_btn").click(function () {
+      var input = $("#user_input").val();
+      var task = Math.floor(Math.random() * 1000000000);
+      var obj = {
+        task: input,
+        status: false,
+      };
+      if (input != null && input != "") {
+        localStorage.setItem(task, JSON.stringify(obj));
+      }
+    });
+
+    //completing task on content click
+
+    $(".checkbox").change(function () {
+      if ($(this).is(":checked")) {
+        var key = $(this).attr("id");
+        var value = localStorage.getItem(key);
+        var obj = {
+          task: JSON.parse(value)["task"],
+          status: true,
+        };
+        localStorage.setItem(key, JSON.stringify(obj));
+        $(this).parent().parent().addClass("active");
+      } else {
+        var key = $(this).attr("id");
+        var value = localStorage.getItem(key);
+        var obj = {
+          task: JSON.parse(value)["task"],
+          status: false,
+        };
+        localStorage.setItem(key, JSON.stringify(obj));
+        $(this).removeClass("active");
+        $(this).parent().parent().removeClass("active");
+      }
+    });
+
+  //   hiding edit modal initially
+    $('.modal_edit').hide()
+
+    // edit btn on click
+    $(".edit_btn").click(function () {
+        var key =  $(this).attr('id')
+        var value = JSON.parse(localStorage.getItem(key))["task"];
+        $('#edit_key').val(key);
+        $('#edit_value').val(value)
+        $('.modal_edit').show()
+    });
+
+
+  //   updating task 
+  $('#edit_task_btn').click(function(){
+      var key = $('#edit_key').val();
+      var value = $('#edit_value').val()
+      var status = JSON.parse(localStorage.getItem(key))["status"];
+      var obj = {
+        task: value,
+        status: status,
+      };
+      if (value != null && value != "") {
+        localStorage.setItem(key, JSON.stringify(obj));
+      }
+      window.location.reload()
+  })
+
+
+  //deleting task 
+  $('.delete_btn').click(function(){
+      localStorage.removeItem($(this).attr('id'));
+      window.location.reload()
+  })
+  </script>
